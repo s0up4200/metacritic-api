@@ -1,4 +1,4 @@
-package main
+package upcoming
 
 import (
 	"encoding/json"
@@ -6,10 +6,13 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
+
+var mutex sync.Mutex
 
 type Album struct {
 	Artist string `json:"artist"`
@@ -24,7 +27,7 @@ type Response struct {
 var albumsJSONStr string
 var lastFetchTime time.Time
 
-func fetchAlbums() {
+func FetchAlbums() {
 	// Lock the mutex to prevent race conditions
 	mutex.Lock()
 
@@ -95,14 +98,14 @@ func fetchAlbums() {
 	mutex.Unlock()
 }
 
-func startCacheUpdater() {
+func StartCacheUpdater() {
 	for {
-		fetchAlbums()
+		FetchAlbums()
 		time.Sleep(24 * time.Hour)
 	}
 }
 
-func handleAlbumsRequest(w http.ResponseWriter, r *http.Request) {
+func HandleAlbumsRequest(w http.ResponseWriter, r *http.Request) {
 	// Lock the mutex to prevent race conditions
 	mutex.Lock()
 	defer mutex.Unlock()

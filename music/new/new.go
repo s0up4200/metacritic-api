@@ -1,4 +1,4 @@
-package main
+package new
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-var cacheMutex sync.Mutex
+var Mutex sync.Mutex
 var requestMutex sync.Mutex
 
 type NewAlbum struct {
@@ -23,13 +23,13 @@ type NewAlbum struct {
 var newAlbumsJSONStr string
 var newLastFetchTime time.Time
 
-func fetchNewAlbums() {
+func FetchNewAlbums() {
 	// Lock the mutex to prevent race conditions
-	cacheMutex.Lock()
+	Mutex.Lock()
 
 	// If the last fetch was less than 24 hours ago, release the lock and return the cached data
 	if time.Since(newLastFetchTime) < 24*time.Hour {
-		cacheMutex.Unlock()
+		Mutex.Unlock()
 		return
 	}
 
@@ -94,17 +94,17 @@ func fetchNewAlbums() {
 	log.Println("New albums cache updated.")
 
 	// Release the lock
-	mutex.Unlock()
+	Mutex.Unlock()
 }
 
-func startNewCacheUpdater() {
+func StartNewCacheUpdater() {
 	for {
-		fetchNewAlbums()
+		FetchNewAlbums()
 		time.Sleep(24 * time.Hour)
 	}
 }
 
-func handleNewAlbumsRequest(w http.ResponseWriter, r *http.Request) {
+func HandleNewAlbumsRequest(w http.ResponseWriter, r *http.Request) {
 	// Lock the request mutex to prevent race conditions
 	requestMutex.Lock()
 	defer requestMutex.Unlock()
