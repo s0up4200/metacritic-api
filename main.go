@@ -1,59 +1,27 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
-	"strings"
-
-	"github.com/PuerkitoBio/goquery"
+	"sync"
 )
 
-type Album struct {
-	Artist string `json:"artist"`
-	Title  string `json:"title"`
-}
+var mutex sync.Mutex
 
 func main() {
-	// Define the URL to scrape
-	url := "https://www.metacritic.com/browse/albums/release-date/coming-soon"
+	// Start the cache updater goroutine
+	go startCacheUpdater()
+	go startNewCacheUpdater()
 
-	// Send a GET request to the specified URL
-	response, err := http.Get(url)
-	if err != nil {
-		panic(err)
-	}
-	defer response.Body.Close()
+	// Register the handler function for the "/metacritic/upcoming-albums" endpoint
+	http.HandleFunc("/metacritic/upcoming-albums", handleAlbumsRequest)
 
-	// Parse the HTML document
-	doc, err := goquery.NewDocumentFromReader(response.Body)
-	if err != nil {
-		panic(err)
-	}
+	// Register the handler function for the "/metacritic/new-albums" endpoint
+	http.HandleFunc("/metacritic/new-albums", handleNewAlbumsRequest)
 
-	// Find all album rows and store the artist and title in a slice of structs
-	var albums []Album
-	doc.Find("tr").Each(func(i int, s *goquery.Selection) {
-		artist := strings.TrimSpace(s.Find(".artistName a").Text())
-		if artist == "" {
-			artist = strings.TrimSpace(s.Find(".artistName").Text())
-		}
-		title := strings.TrimSpace(s.Find(".albumTitle").Text())
-		if artist != "" && title != "" && title != "[Title TBA]" {
-			album := Album{artist, title}
-			albums = append(albums, album)
-		}
-	})
-
-	// Convert the slice of structs to a JSON string with single quotes
-	albumsJSON, err := json.Marshal(albums)
-	if err != nil {
-		panic(err)
-	}
-	albumsJSONStr := string(albumsJSON)
-	albumsJSONStr = strings.Replace(albumsJSONStr, "\\u0026", "&", -1) // Convert HTML escape sequence to "&"
-	albumsJSONStr = strings.ReplaceAll(albumsJSONStr, "\"", "'")
-
-	// Print the JSON string
-	fmt.Println(albumsJSONStr)
+	// Start the HTTP server
+	fmt.Println("Server listening on port 8080...")
+	log.Println("Server started successfully.")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
