@@ -4,21 +4,20 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sync"
-)
 
-var mutex sync.Mutex
+	"github.com/s0up4200/metacritic-api/music"
+)
 
 func main() {
 	// Start the cache updater goroutines
-	go startCacheUpdater()
-	go startNewCacheUpdater()
+	go music.StartCacheUpdater()
+	go music.StartNewCacheUpdater()
 
 	// Register the handler function for the "/metacritic/upcoming-albums" endpoint
-	http.HandleFunc("/metacritic/upcoming-albums", handleAlbumsRequest)
+	http.HandleFunc("/metacritic/upcoming-albums", music.HandleAlbumsRequest)
 
 	// Register the handler function for the "/metacritic/new-albums" endpoint
-	http.HandleFunc("/metacritic/new-albums", handleNewAlbumsRequest)
+	http.HandleFunc("/metacritic/new-albums", music.HandleNewAlbumsRequest)
 
 	// Start the HTTP server
 	fmt.Println("Server listening on port 45323...")
