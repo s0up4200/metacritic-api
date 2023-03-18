@@ -46,6 +46,7 @@ func fetchNewAlbums() {
 	var newAlbums []NewAlbum
 	doc.Find("tr").Each(func(i int, s *goquery.Selection) {
 		artist := strings.TrimSpace(s.Find(".clamp-details .artist").Text())
+		artist = strings.TrimPrefix(artist, "by ") // Remove the "by " prefix
 		title := strings.TrimSpace(s.Find(".title h3").Text())
 		if artist != "" && title != "" && title != "[Title TBA]" {
 			newAlbum := NewAlbum{artist, title}
