@@ -15,6 +15,11 @@ type Album struct {
 	Title  string `json:"title"`
 }
 
+type Response struct {
+	Title  string  `json:"title"`
+	Albums []Album `json:"albums"`
+}
+
 var albumsJSONStr string
 var lastFetchTime time.Time
 
@@ -56,8 +61,14 @@ func fetchAlbums() {
 		}
 	})
 
-	// Convert the slice of structs to a JSON string with two-space indents
-	albumsJSON, err := json.MarshalIndent(albums, "", "  ")
+	// Wrap the albums in a custom struct with a title
+	responseStruct := Response{
+		Title:  "UPCOMING ALBUM RELEASES - METACRITIC",
+		Albums: albums,
+	}
+
+	// Convert the response to a JSON string with two-space indents
+	albumsJSON, err := json.MarshalIndent(responseStruct, "", "  ")
 	if err != nil {
 		log.Printf("Error encoding albums to JSON: %s\n", err)
 		return
@@ -87,65 +98,11 @@ func handleAlbumsRequest(w http.ResponseWriter, r *http.Request) {
 	// Log the incoming request details
 	log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.URL)
 
-	// Define the URL to scrape
-	url := "https://www.metacritic.com/browse/albums/release-date/coming-soon"
-
-	// Send a GET request to the specified URL
-	response, err := http.Get(url)
-	if err != nil {
-		log.Printf("Error fetching albums: %s\n", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-	defer response.Body.Close()
-
-	// Parse the HTML document
-	doc, err := goquery.NewDocumentFromReader(response.Body)
-	if err != nil {
-		log.Printf("Error parsing HTML: %s\n", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
-	// Find all album rows and store the artist and title in a slice of structs
-	var albums []Album
-	doc.Find("tr").Each(func(i int, s *goquery.Selection) {
-		artist := strings.TrimSpace(s.Find(".artistName a").Text())
-		if artist == "" {
-			artist = strings.TrimSpace(s.Find(".artistName").Text())
-		}
-		title := strings.TrimSpace(s.Find(".albumTitle").Text())
-		if artist != "" && title != "" && title != "[Title TBA]" {
-			album := Album{artist, title}
-			albums = append(albums, album)
-		}
-	})
-
-	// Define a custom struct with the desired JSON order
-	type Response struct {
-		Title  string  `json:"title"`
-		Albums []Album `json:"albums"`
-	}
-
-	// Wrap the albums in a custom struct with a title
-	responseStruct := Response{
-		Title:  "UPCOMING ALBUM RELEASES - METACRITIC",
-		Albums: albums,
-	}
-
-	// Convert the response to a JSON string with two-space indents
-	responseJSON, err := json.MarshalIndent(responseStruct, "", "  ")
-	if err != nil {
-		log.Printf("Error encoding response to JSON: %s\n", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-		return
-	}
-
 	// Set the Content-Type header to application/json
 	w.Header().Set("Content-Type", "application/json")
 
 	// Write the JSON response to the HTTP response writer
-	w.Write(responseJSON)
+	w.Write([]byte(albumsJSONStr))
 
 	// Log the response details
 	log.Printf("%s %s %s %d", r.RemoteAddr, r.Method, r.URL, http.StatusOK)

@@ -10,7 +10,7 @@ import (
 var mutex sync.Mutex
 
 func main() {
-	// Start the cache updater goroutine
+	// Start the cache updater goroutines
 	go startCacheUpdater()
 	go startNewCacheUpdater()
 
