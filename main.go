@@ -23,5 +23,5 @@ func main() {
 	// Start the HTTP server
 	fmt.Println("Server listening on port 8080...")
 	log.Println("Server started successfully.")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":45323", nil))
 }
