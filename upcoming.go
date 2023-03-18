@@ -25,8 +25,12 @@ var albumsJSONStr string
 var lastFetchTime time.Time
 
 func fetchAlbums() {
-	// If the last fetch was less than 24 hours ago, return the cached data
+	// Lock the mutex to prevent race conditions
+	mutex.Lock()
+
+	// If the last fetch was less than 24 hours ago, release the lock and return the cached data
 	if time.Since(lastFetchTime) < 24*time.Hour {
+		mutex.Unlock()
 		return
 	}
 
@@ -84,7 +88,11 @@ func fetchAlbums() {
 	// Update the last fetch time to the current time
 	lastFetchTime = time.Now()
 
+	// Log the update
 	log.Println("Albums cache updated.")
+
+	// Release the lock
+	mutex.Unlock()
 }
 
 func startCacheUpdater() {
@@ -111,8 +119,11 @@ func handleAlbumsRequest(w http.ResponseWriter, r *http.Request) {
 	// Set the Content-Type header to application/json
 	w.Header().Set("Content-Type", "application/json")
 
-	// Write the JSON response to the HTTP response writer
-	w.Write([]byte(albumsJSONStr))
+	// Copy the albums JSON string to a local variable
+	albumsJSONStrCopy := albumsJSONStr
+
+	// Write the JSON response to the HTTP response writer using the local variable
+	w.Write([]byte(albumsJSONStrCopy))
 
 	// Log the response details
 	log.Printf("%s %s %s %d", r.RemoteAddr, r.Method, r.URL, http.StatusOK)

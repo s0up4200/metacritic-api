@@ -6,10 +6,14 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
 )
+
+var cacheMutex sync.Mutex
+var requestMutex sync.Mutex
 
 type NewAlbum struct {
 	Artist string `json:"artist"`
@@ -20,8 +24,12 @@ var newAlbumsJSONStr string
 var newLastFetchTime time.Time
 
 func fetchNewAlbums() {
-	// If the last fetch was less than 24 hours ago, return the cached data
+	// Lock the mutex to prevent race conditions
+	cacheMutex.Lock()
+
+	// If the last fetch was less than 24 hours ago, release the lock and return the cached data
 	if time.Since(newLastFetchTime) < 24*time.Hour {
+		cacheMutex.Unlock()
 		return
 	}
 
@@ -84,6 +92,9 @@ func fetchNewAlbums() {
 	newLastFetchTime = time.Now()
 
 	log.Println("New albums cache updated.")
+
+	// Release the lock
+	mutex.Unlock()
 }
 
 func startNewCacheUpdater() {
@@ -94,9 +105,9 @@ func startNewCacheUpdater() {
 }
 
 func handleNewAlbumsRequest(w http.ResponseWriter, r *http.Request) {
-	// Lock the mutex to prevent race conditions
-	mutex.Lock()
-	defer mutex.Unlock()
+	// Lock the request mutex to prevent race conditions
+	requestMutex.Lock()
+	defer requestMutex.Unlock()
 
 	// Retrieve the client IP address from the X-Forwarded-For header
 	remoteAddr := r.Header.Get("X-Forwarded-For")
