@@ -1,0 +1,12 @@
+[Unit]
+Description=metacritic-api service for %i
+After=syslog.target network-online.target
+
+[Service]
+Type=simple
+User=%i
+Group=%i
+ExecStart=/usr/bin/metacritic-api
+
+[Install]
+WantedBy=multi-user.target
