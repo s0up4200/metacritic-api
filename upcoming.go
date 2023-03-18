@@ -75,7 +75,7 @@ func fetchAlbums() {
 	}
 	albumsJSONStr = string(albumsJSON)
 	albumsJSONStr = strings.Replace(albumsJSONStr, "\\u0026", "&", -1) // Convert HTML escape sequence to "&"
-	albumsJSONStr = strings.ReplaceAll(albumsJSONStr, "'", "\"")
+	//albumsJSONStr = strings.ReplaceAll(albumsJSONStr, "'", "\"")
 
 	// Update the last fetch time to the current time
 	lastFetchTime = time.Now()
