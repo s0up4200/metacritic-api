@@ -21,7 +21,7 @@ func main() {
 	http.HandleFunc("/metacritic/new-albums", handleNewAlbumsRequest)
 
 	// Start the HTTP server
-	fmt.Println("Server listening on port 8080...")
+	fmt.Println("Server listening on port 45323...")
 	log.Println("Server started successfully.")
 	log.Fatal(http.ListenAndServe(":45323", nil))
 }
