@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/s0up4200/metacritic-api/music"
+	"metacritic-api/music"
 )
 
 func main() {
