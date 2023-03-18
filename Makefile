@@ -1,6 +1,6 @@
 # Build the program
 build:
-	go build -o ./bin/metacritic-api
+	go build -o ./bin/metacritic-api ./cmd/metacriticapi/
 
 # Clean up build artifacts
 clean:
