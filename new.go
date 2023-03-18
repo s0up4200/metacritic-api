@@ -98,8 +98,14 @@ func handleNewAlbumsRequest(w http.ResponseWriter, r *http.Request) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
+	// Retrieve the client IP address from the X-Forwarded-For header
+	remoteAddr := r.Header.Get("X-Forwarded-For")
+	if remoteAddr == "" {
+		remoteAddr = r.RemoteAddr
+	}
+
 	// Log the incoming request details
-	log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.URL)
+	log.Printf("%s %s %s", remoteAddr, r.Method, r.URL)
 
 	// Set the Content-Type header to application/json
 	w.Header().Set("Content-Type", "application/json")
