@@ -19,7 +19,7 @@ builds:
       - { goos: darwin, goarch: arm }
       - { goos: freebsd, goarch: arm }
       - { goos: freebsd, goarch: arm64 }
-    main: cmd/metacritic-api/main.go
+    main: cmd/metacriticapi/main.go
     binary: metacritic-api
 
 archives:
