@@ -3,3 +3,4 @@ cache.json
 metacritic-api
 
 bin/
+dist/
