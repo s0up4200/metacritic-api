@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -55,6 +56,9 @@ func fetchAlbums() {
 			artist = strings.TrimSpace(s.Find(".artistName").Text())
 		}
 		title := strings.TrimSpace(s.Find(".albumTitle").Text())
+		// Remove square brackets and their content at the end of the title
+		re := regexp.MustCompile(`\s*\[[^\]]*\]$`)
+		title = re.ReplaceAllString(title, "")
 		if artist != "" && title != "" && title != "[Title TBA]" {
 			album := Album{artist, title}
 			albums = append(albums, album)
